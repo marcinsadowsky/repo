@@ -11,8 +11,8 @@ namespace TransakcjaFir.DAL
         public DbSet<Model.TransactionCore> TransactionCores { get; set; }
         public DbSet<Model.TransactionAml> TransactionAmls { get; set; }
         public DbSet<Model.TransactionStir> TransactionStirs { get; set; }
-        public DbSet<Model.TransactionPersonsList> TransactionPersonsLists { get; set; }
-        public DbSet<Model.TransactionPerson> TransactionPersons { get; set; }
+        public DbSet<Model.TransactionDisposersList> TransactionPersonsLists { get; set; }
+        public DbSet<Model.TransactionDisposer> TransactionPersons { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

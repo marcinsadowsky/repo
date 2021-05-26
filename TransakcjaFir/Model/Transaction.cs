@@ -4,7 +4,7 @@ using System;
 
 namespace TransakcjaFir.Model
 {
-    public class Transaction
+    public class Transaction : ITransactionPartVersion
     {
         public long Id { get; set; }
         public DateTime CreationDate { get; set; }
@@ -22,26 +22,8 @@ namespace TransakcjaFir.Model
         public long AmlId { get; set; }
         public TransactionStir Stir { get; set; }
         public long StirId { get; set; }
-        public TransactionPersonsList Persons { get; set; }
-        public long PersonsId { get; set; }
-
-        public static Transaction Create(string reference, int version) =>
-          new Transaction()
-          {
-              TransactionReference = reference,
-              VersionNumber = version,
-              IsLastVersion = true
-          };
-        public static Transaction CreateNewVersion(Transaction existing)
-        {
-            existing.IsLastVersion = false;
-            return new Transaction()
-            {
-                TransactionReference = existing.TransactionReference,
-                VersionNumber = existing.VersionNumber + 1,
-                IsLastVersion = true
-            };
-        }
+        public TransactionDisposersList Disposers { get; set; }
+        public long DisposersId { get; set; }
     }
 
     internal class TransactionEntityTypeConfiguration : IEntityTypeConfiguration<Transaction>
@@ -55,12 +37,12 @@ namespace TransakcjaFir.Model
             builder.Property(c => c.CoreId).HasColumnName("TransactionCoreId");
             builder.Property(c => c.AmlId).HasColumnName("TransactionAmlId");
             builder.Property(c => c.StirId).HasColumnName("TransactionStirId");
-            builder.Property(c => c.PersonsId).HasColumnName("TransactionPersonsListId");
+            builder.Property(c => c.DisposersId).HasColumnName("TransactionDisposersListId");
 
             builder.HasOne(c => c.Core).WithMany(c => c.Transaction);
             builder.HasOne(c => c.Aml).WithMany(c => c.Transaction);
             builder.HasOne(c => c.Stir).WithMany(c => c.Transaction);
-            builder.HasOne(c => c.Persons).WithMany(c => c.Transaction);
+            builder.HasOne(c => c.Disposers).WithMany(c => c.Transaction);
         }
     }
 }

@@ -7,7 +7,7 @@ using Xunit;
 
 namespace TransakcjaFirTests
 {
-    public class Modification_Of_Transaction_Not_Sent_To_Aml_Or_Stir : BaseTest
+    public class Modification_Of_Transaction_Not_Sent_To_Aml_Or_Stir : BaseTransactionTest
     {
         [Fact]
         public async void Should_Not_Create_New_Version_When_Changing_Core_Data()
@@ -15,15 +15,16 @@ namespace TransakcjaFirTests
             string reference = GenerateReference("NotSentCore");
 
             // prepare test transaction
-            new TestTransactionsGenerator().CreateTransactionWithCoreData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 1, 2, 3 }, "xxxx");
+            new TestTransactionsGenerator().PrepareTransactionWithCoreData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 1, 2, 3 }, "xxxx");
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
                 transaction.Core.PaymentDetails1 = "yyyy";
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -31,7 +32,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(new FirContext());
+                TransactionService service = new TransactionService(new FirContext());
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -40,7 +41,7 @@ namespace TransakcjaFirTests
             {
                 CheckTransactionData(result, 1, true);
                 CheckTransactionCoreData(result.Core, 1, true);
-                CheckPersonsData(result.Persons, 1, true, 3);
+                CheckPersonsData(result.Disposers, 1, true, 3);
                 CheckAmlData(result.Aml, 1, true, AmlExportStatusEnum.NotSent);
                 CheckStirData(result.Stir, 1, true, StirExportStatusEnum.NotSent);
                 result.Core.PaymentDetails1.Should().Be("yyyy");
@@ -53,15 +54,16 @@ namespace TransakcjaFirTests
             string reference = GenerateReference("NotSentAml");
 
             // prepare test transaction
-            new TestTransactionsGenerator().CreateTransactionWithAmlData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 4, 5, 6 }, "xxxx");
+            new TestTransactionsGenerator().PrepareTransactionWithAmlData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 4, 5, 6 }, "xxxx");
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
                 transaction.Aml.AmlRelatedAttribure = "yyyy";
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -69,7 +71,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(new FirContext());
+                TransactionService service = new TransactionService(new FirContext());
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -78,7 +80,7 @@ namespace TransakcjaFirTests
             {
                 CheckTransactionData(result, 1, true);
                 CheckTransactionCoreData(result.Core, 1, true);
-                CheckPersonsData(result.Persons, 1, true, 3);
+                CheckPersonsData(result.Disposers, 1, true, 3);
                 CheckAmlData(result.Aml, 1, true, AmlExportStatusEnum.NotSent);
                 CheckStirData(result.Stir, 1, true, StirExportStatusEnum.NotSent);
                 result.Aml.AmlRelatedAttribure.Should().Be("yyyy");
@@ -90,15 +92,16 @@ namespace TransakcjaFirTests
         {
             string reference = GenerateReference("NotSentStir");
 
-            new TestTransactionsGenerator().CreateTransactionWithStirData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 4, 5, 6 }, "xxxx");
+            new TestTransactionsGenerator().PrepareTransactionWithStirData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent, new int[] { 4, 5, 6 }, "xxxx");
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
                 transaction.Stir.StirRelatedAttribure = "yyyy";
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -106,7 +109,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(new FirContext());
+                TransactionService service = new TransactionService(new FirContext());
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -115,7 +118,7 @@ namespace TransakcjaFirTests
             {
                 CheckTransactionData(result, 1, true);
                 CheckTransactionCoreData(result.Core, 1, true);
-                CheckPersonsData(result.Persons, 1, true, 3);
+                CheckPersonsData(result.Disposers, 1, true, 3);
                 CheckAmlData(result.Aml, 1, true, AmlExportStatusEnum.NotSent);
                 CheckStirData(result.Stir, 1, true, StirExportStatusEnum.NotSent);
                 result.Stir.StirRelatedAttribure.Should().Be("yyyy");
@@ -131,27 +134,28 @@ namespace TransakcjaFirTests
             string reference = GenerateReference("NotSentBothPerBoth");
 
             var generator = new TestTransactionsGenerator();
-            generator.CreateTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
+            generator.PrepareTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
 
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        transaction.Persons.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.AdditionalDisposer, StirPersonsRole.None));
+                        transaction.Disposers.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.AdditionalDisposer, StirPersonsRole.None));
                         break;
                     case PersonsListOperation.Modify:
-                        transaction.Persons.List.Single(p => p.PersonId == 4).PersonName = "new_aml";
+                        transaction.Disposers.List.Single(p => p.PersonId == 4).PersonName = "new_aml";
                         break;
                     case PersonsListOperation.Delete:
-                        transaction.Persons.List.RemoveAll(p => p.PersonId == 4);
+                        transaction.Disposers.List.RemoveAll(p => p.PersonId == 4);
                         break;
                 }
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -159,7 +163,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(context);
+                TransactionService service = new TransactionService(context);
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -174,17 +178,17 @@ namespace TransakcjaFirTests
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        CheckPersonsData(result.Persons, 1, true, 4);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
+                        CheckPersonsData(result.Disposers, 1, true, 4);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
                         break;
                     case PersonsListOperation.Modify:
-                        CheckPersonsData(result.Persons, 1, true, 3);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
-                        result.Persons.List.Single(p => p.PersonId == 4).PersonName.Should().Be("new_aml");
+                        CheckPersonsData(result.Disposers, 1, true, 3);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
+                        result.Disposers.List.Single(p => p.PersonId == 4).PersonName.Should().Be("new_aml");
                         break;
                     case PersonsListOperation.Delete:
-                        CheckPersonsData(result.Persons, 1, true, 2);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 6, 8 });
+                        CheckPersonsData(result.Disposers, 1, true, 2);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 6, 8 });
                         break;
                 }
             }
@@ -199,27 +203,28 @@ namespace TransakcjaFirTests
             string reference = GenerateReference("NotSentBothPerStor");
 
             var generator = new TestTransactionsGenerator();
-            generator.CreateTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
+            generator.PrepareTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
 
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        transaction.Persons.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.None, StirPersonsRole.Disposer));
+                        transaction.Disposers.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.None, StirPersonsRole.Disposer));
                         break;
                     case PersonsListOperation.Modify:
-                        transaction.Persons.List.Single(p => p.PersonId == 6).PersonName = "new_stir";
+                        transaction.Disposers.List.Single(p => p.PersonId == 6).PersonName = "new_stir";
                         break;
                     case PersonsListOperation.Delete:
-                        transaction.Persons.List.RemoveAll(p => p.PersonId == 6);
+                        transaction.Disposers.List.RemoveAll(p => p.PersonId == 6);
                         break;
                 }
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -227,7 +232,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(context);
+                TransactionService service = new TransactionService(context);
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -242,17 +247,17 @@ namespace TransakcjaFirTests
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        CheckPersonsData(result.Persons, 1, true, 4);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
+                        CheckPersonsData(result.Disposers, 1, true, 4);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
                         break;
                     case PersonsListOperation.Modify:
-                        CheckPersonsData(result.Persons, 1, true, 3);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
-                        result.Persons.List.Single(p => p.PersonId == 6).PersonName.Should().Be("new_stir");
+                        CheckPersonsData(result.Disposers, 1, true, 3);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
+                        result.Disposers.List.Single(p => p.PersonId == 6).PersonName.Should().Be("new_stir");
                         break;
                     case PersonsListOperation.Delete:
-                        CheckPersonsData(result.Persons, 1, true, 2);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 8 });
+                        CheckPersonsData(result.Disposers, 1, true, 2);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 8 });
                         break;
                 }
             }
@@ -267,27 +272,28 @@ namespace TransakcjaFirTests
             string reference = GenerateReference("NotSentBothPerBoth");
 
             var generator = new TestTransactionsGenerator();
-            generator.CreateTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
+            generator.PrepareTransactionWithPersonsData(reference, AmlExportStatusEnum.NotSent, StirExportStatusEnum.NotSent);
 
             using (var context = new FirContext())
             {
                 // run test
-                FirTransactionService service = new FirTransactionService(context);
-                var transaction = await service.LoadTransaction(reference, 1);
+                TransactionService readService = new TransactionService(context);
+                TransactionVersioningService versioningService = new TransactionVersioningService(context, readService);
+                var transaction = await readService.LoadTransaction(reference, 1);
 
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        transaction.Persons.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.AdditionalDisposer, StirPersonsRole.Disposer));
+                        transaction.Disposers.List.Add(generator.CreatePerson(20, "created", AmlPersonsRole.AdditionalDisposer, StirPersonsRole.Disposer));
                         break;
                     case PersonsListOperation.Modify:
-                        transaction.Persons.List.Single(p => p.PersonId == 8).PersonName = "new_aml_stir";
+                        transaction.Disposers.List.Single(p => p.PersonId == 8).PersonName = "new_aml_stir";
                         break;
                     case PersonsListOperation.Delete:
-                        transaction.Persons.List.RemoveAll(p => p.PersonId == 8);
+                        transaction.Disposers.List.RemoveAll(p => p.PersonId == 8);
                         break;
                 }
-                await service.SaveTransactionAsync(transaction);
+                await versioningService.SaveTransactionsVersionsAsync();
                 // check results kept in memory
                 CheckModifiedTransaction(transaction);
             }
@@ -295,7 +301,7 @@ namespace TransakcjaFirTests
             // check data saved in DB
             using (var context = new FirContext())
             {
-                FirTransactionService service = new FirTransactionService(context);
+                TransactionService service = new TransactionService(context);
                 var saved = await service.LoadTransaction(reference, 1);
                 CheckModifiedTransaction(saved);
             }
@@ -310,17 +316,17 @@ namespace TransakcjaFirTests
                 switch (operation)
                 {
                     case PersonsListOperation.Add:
-                        CheckPersonsData(result.Persons, 1, true, 4);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
+                        CheckPersonsData(result.Disposers, 1, true, 4);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8, 20 });
                         break;
                     case PersonsListOperation.Modify:
-                        CheckPersonsData(result.Persons, 1, true, 3);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
-                        result.Persons.List.Single(p => p.PersonId == 8).PersonName.Should().Be("new_aml_stir");
+                        CheckPersonsData(result.Disposers, 1, true, 3);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6, 8 });
+                        result.Disposers.List.Single(p => p.PersonId == 8).PersonName.Should().Be("new_aml_stir");
                         break;
                     case PersonsListOperation.Delete:
-                        CheckPersonsData(result.Persons, 1, true, 2);
-                        result.Persons.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6 });
+                        CheckPersonsData(result.Disposers, 1, true, 2);
+                        result.Disposers.List.Select(p => p.PersonId).ToList().Should().BeEquivalentTo(new[] { 4, 6 });
                         break;
                 }
             }

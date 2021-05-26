@@ -4,11 +4,11 @@ using TransakcjaFir.Model;
 
 namespace TransakcjaFirTests
 {
-    public class BaseTest
+    public class BaseTransactionTest
     {
         public enum PersonsListOperation { Add, Modify, Delete }
-        public enum AmlPersonsRole { None, MainDisposer, AdditionalDisposer, Ubo }
-        public enum StirPersonsRole { None, MainDisposer, Disposer }
+        public enum AmlPersonsRole { None, MainDisposer, AdditionalDisposer }
+        public enum StirPersonsRole { None, Disposer }
 
         internal static string GenerateReference(string prefix) => 
             $"{DateTime.Now:yyyy-MM-dd hh:mm:ss.ffff} {prefix} {Guid.NewGuid()}".Substring(0, 40);
@@ -25,7 +25,7 @@ namespace TransakcjaFirTests
             data.IsLastVersion.Should().Be(isLastVersion);
         }
 
-        protected void CheckPersonsData(TransactionPersonsList data, int versionNumber, bool isLastVersion, int personsCount)
+        protected void CheckPersonsData(TransactionDisposersList data, int versionNumber, bool isLastVersion, int personsCount)
         {
             data.VersionNumber.Should().Be(versionNumber);
             data.IsLastVersion.Should().Be(isLastVersion);

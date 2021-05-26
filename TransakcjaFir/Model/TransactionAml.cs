@@ -6,7 +6,7 @@ using TransakcjaFir.DAL.ValueConverters;
 
 namespace TransakcjaFir.Model
 {
-    public class TransactionAml
+    public class TransactionAml : ITransactionPartVersion
     {
         public long Id { get; set; }
         public List<Transaction> Transaction { get; set; }
@@ -20,28 +20,8 @@ namespace TransakcjaFir.Model
 
         public bool IsExported()
         {
-            return ProcessingStatus != AmlExportStatusEnum.NotSent;
+            return (ProcessingStatus != AmlExportStatusEnum.NotApplicable) && (ProcessingStatus != AmlExportStatusEnum.NotSent);
         }
-
-        public static TransactionAml Create(Transaction transaction, string reference, int version) =>
-            new TransactionAml()
-            {
-                Transaction = new List<Transaction>() { transaction },
-                TransactionReference = reference,
-                VersionNumber = version,
-                IsLastVersion = true,
-                ProcessingStatus = AmlExportStatusEnum.NotSent,
-            };
-
-        public static TransactionAml CloneAsNewVersion(TransactionAml aml) =>
-            new TransactionAml()
-            {
-                TransactionReference = aml.TransactionReference,
-                VersionNumber = aml.VersionNumber + 1,
-                IsLastVersion = true,
-                ProcessingStatus = AmlExportStatusEnum.NotSent,
-                AmlRelatedAttribure = aml.AmlRelatedAttribure,
-            };
     }
 
     internal class TransactionAmlEntityTypeConfiguration : IEntityTypeConfiguration<TransactionAml>

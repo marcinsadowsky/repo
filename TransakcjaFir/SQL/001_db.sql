@@ -5,7 +5,13 @@ drop database if exists TransactionFirDb
 go
 
 create database TransactionFirDb
-go
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'TransactionFirDb', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\TransactionFirDb.mdf' , SIZE = 512000KB , MAXSIZE = UNLIMITED, FILEGROWTH = 0)
+ LOG ON 
+( NAME = N'TransactionFirDb_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.MSSQLSERVER\MSSQL\DATA\TransactionFirDb_log.ldf' , SIZE = 204800KB , MAXSIZE = 2048GB , FILEGROWTH = 0)
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
+GO
 
 use TransactionFirDb
 go
@@ -27,7 +33,7 @@ create table REP.[Transaction] (
 	TransactionCoreId bigint not null,
 	TransactionAmlId bigint not null,
 	TransactionStirId bigint not null,
-	TransactionPersonsListId bigint not null
+	TransactionDisposersListId bigint not null
 )
 go
 
@@ -93,27 +99,25 @@ go
 create unique index IdxTransactionStir_CurrentVersion on REP.[TransactionStir] ( TransactionReference, IsLastVersion ) where IsLastVersion = 1
 go
 
-create table REP.TransactionPersonsList (
-	TransactionPersonsListId bigint identity (561, 1) not null primary key,
+create table REP.TransactionDisposersList (
+	TransactionDisposersListId bigint identity (561, 1) not null primary key,
 	TransactionReference varchar(40) not null,
 	VersionNumber int not null,
 	IsLastVersion bit not null,
 )
 
-create unique index idxTransactionPersonsListNk on REP.[TransactionPersonsList] ( TransactionReference, VersionNumber )
+create unique index idxTransactionDisposersListNk on REP.[TransactionDisposersList] ( TransactionReference, VersionNumber )
 go
 
-create unique index IdxTransactionPersonsList_CurrentVersion on REP.[TransactionPersonsList] ( TransactionReference, IsLastVersion ) where IsLastVersion = 1
+create unique index IdxTransactionDisposersList_CurrentVersion on REP.[TransactionDisposersList] ( TransactionReference, IsLastVersion ) where IsLastVersion = 1
 go
 
-create table REP.TransactionPerson (
-	TransactionPersonId bigint identity (31, 1) not null primary key,
-	TransactionPersonsListId bigint not null,
+create table REP.TransactionDisposer (
+	TransactionDisposerId bigint identity (31, 1) not null primary key,
+	TransactionDisposersListId bigint not null,
 	PersonId bigint not null,
 	IsAmlMainDisposer bit not null,
 	IsAmlAdditionalDisposer bit not null,
-	IsAmlUbo bit not null,
-	IsStirMainDisposer bit not null,
 	IsStirDisposer bit not null,
 	PersonName varchar(100) not null,
 )
@@ -128,8 +132,8 @@ go
 alter table REP.[Transaction] add constraint fk_transaction_TransactionStir foreign key (TransactionStirId) references REP.TransactionStir (TransactionStirId)
 go
 
-alter table REP.[Transaction] add constraint fk_transaction_TransactionPersonsList foreign key (TransactionPersonsListId) references REP.TransactionPersonsList (TransactionPersonsListId)
+alter table REP.[Transaction] add constraint fk_transaction_TransactionDisposersList foreign key (TransactionDisposersListId) references REP.TransactionDisposersList (TransactionDisposersListId)
 go
 
-alter table REP.TransactionPerson add constraint fk_TransactionPerson_TransactionPersonsList foreign key (TransactionPersonsListId) references REP.TransactionPersonsList (TransactionPersonsListId)
+alter table REP.TransactionDisposer add constraint fk_TransactionDisposer_TransactionDisposersList foreign key (TransactionDisposersListId) references REP.TransactionDisposersList (TransactionDisposersListId)
 go

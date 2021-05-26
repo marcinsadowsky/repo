@@ -6,7 +6,7 @@ using TransakcjaFir.DAL.ValueConverters;
 
 namespace TransakcjaFir.Model
 {
-    public class TransactionStir
+    public class TransactionStir : ITransactionPartVersion
     {
         public long Id { get; set; }
         public List<Transaction> Transaction { get; set; }
@@ -19,28 +19,8 @@ namespace TransakcjaFir.Model
         public string StirRelatedAttribure { get; set; }
         public bool IsExported()
         {
-            return ProcessingStatus != StirExportStatusEnum.NotSent;
+            return (ProcessingStatus != StirExportStatusEnum.NotApplicable) && (ProcessingStatus != StirExportStatusEnum.NotSent);
         }
-
-        public static TransactionStir Create(Transaction transaction, string reference, int version) =>
-            new TransactionStir()
-            {
-                Transaction = new List<Transaction>() { transaction },
-                TransactionReference = reference,
-                VersionNumber = version,
-                IsLastVersion = true,
-                ProcessingStatus = StirExportStatusEnum.NotSent,
-            };
-
-        public static TransactionStir CloneAsNewVersion(TransactionStir stir) =>
-            new TransactionStir()
-            {
-                TransactionReference = stir.TransactionReference,
-                VersionNumber = stir.VersionNumber + 1,
-                IsLastVersion = true,
-                ProcessingStatus = StirExportStatusEnum.NotSent,
-                StirRelatedAttribure = stir.StirRelatedAttribure,
-            };
     }
 
     internal class TransactionStirEntityTypeConfiguration : IEntityTypeConfiguration<TransactionStir>

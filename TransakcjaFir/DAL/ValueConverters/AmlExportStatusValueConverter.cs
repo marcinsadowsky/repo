@@ -9,9 +9,11 @@ namespace TransakcjaFir.DAL.ValueConverters
     {
         private static readonly IReadOnlyDictionary<string, AmlExportStatusEnum> _values = new Dictionary<string, AmlExportStatusEnum>
         {
-            { "Not sent", AmlExportStatusEnum.NotSent },
-            { "In progress", AmlExportStatusEnum.InProgress },
+            { "n/a", AmlExportStatusEnum.NotApplicable },
+            { "NotSent", AmlExportStatusEnum.NotSent },
+            { "Sending", AmlExportStatusEnum.InProgress },
             { "Sent", AmlExportStatusEnum.Sent },
+            { "Delivered", AmlExportStatusEnum.Delivered },
             { "Error", AmlExportStatusEnum.Error }
         };
 
